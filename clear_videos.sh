@@ -1,1 +1,1 @@
-rm video/*.h264
+rm -rf video/*
