@@ -1,1 +1,1 @@
-rm -rf video/*
+sudo rm -rf video/*
