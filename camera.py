@@ -3,16 +3,21 @@ from time import sleep
 from datetime import datetime
 from os import mkdir
 from os.path import isdir
+import sys
 
 
 # Constants
 
 # to specify lines not to run during actual use
-testing = True
+testing = False
 
 videodir = 'video'
 logfile = 'videolog.log'
 filetype = 'h264'
+
+# how many 0s to put in front of counter number
+# will start to screw up when video has passed (interval)*10^(zfill_decimal) seconds in length
+zfill_decimal = 6 
 
 # (pixel width, height)
 resolution = (1400,1050)
@@ -26,7 +31,8 @@ def generate_filename(videodir, timestamp, counter, filetype):
 	if not isdir(filename_prefix):
 		if testing: print 'Creating directory {}'.format(filename_prefix)
 		mkdir(filename_prefix)
-	filename =  "{}/{}-{}.{}".format(filename_prefix, timestamp, counter, filetype)
+	zfill_counter = str(counter).zfill(zfill_decimal)
+	filename =  "{}/{}-{}.{}".format(filename_prefix, timestamp, zfill_counter, filetype)
 	if testing: print 'Recording {}'.format(filename)
 	return filename
 
@@ -59,4 +65,7 @@ def main():
 
 
 if __name__ == "__main__":
+	if len(sys.argv) > 1:
+		if sys.argv[1] == '-t' or sys.argv[1] == '--testing':
+			testing = True
 	main()
