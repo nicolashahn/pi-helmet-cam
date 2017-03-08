@@ -1,1 +1,2 @@
-python /home/pi/cam/camera.py
+cd /home/pi/cam
+python camera.py
