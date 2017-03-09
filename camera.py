@@ -58,7 +58,7 @@ def main():
 
 		# Initialization
 		camera.resolution = resolution
-		timestamp = str(datetime.utcnow()).replace(' ','-').replace(':','-')
+		timestamp = str(datetime.now()).replace(' ','-').replace(':','-')
 
 		# start recording, chunking files every <interval> seconds
 		continuous_record(camera, videodir, timestamp, filetype, interval)
