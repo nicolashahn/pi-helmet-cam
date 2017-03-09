@@ -20,7 +20,7 @@ filetype = 'h264'
 zfill_decimal = 6 
 
 # (pixel width, height)
-resolution = (1400,1050)
+resolution = (1296, 972)
 
 # number of seconds to film each video
 interval = 5
