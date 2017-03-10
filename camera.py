@@ -24,7 +24,7 @@ resolution = (1296, 972)
 framerate = 30
 
 # number of seconds to film each video
-interval = 10
+interval = 5
 
 # what % of disk space must be free to start a new video
 required_free_space_percent = 10
