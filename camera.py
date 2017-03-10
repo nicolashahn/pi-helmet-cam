@@ -30,6 +30,7 @@ interval = 5
 
 
 def generate_filename(videodir, timestamp, counter, filetype):
+	""" going to look like: 2017-03-08-09-54-27.334326-000001.h264 """
 	filename_prefix = '{}/{}'.format(videodir, timestamp)
 	if not isdir(filename_prefix):
 		if testing: print 'Creating directory {}'.format(filename_prefix)
