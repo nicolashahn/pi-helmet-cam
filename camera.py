@@ -12,7 +12,7 @@ import sys
 testing = False
 
 videodir = 'video'
-logfile = 'videolog.log'
+logfile = 'videolog.log' #TODO
 filetype = 'h264'
 
 # how many 0s to put in front of counter number
@@ -20,13 +20,11 @@ filetype = 'h264'
 zfill_decimal = 6 
 
 # (pixel width, height)
-# resolution = (1296, 972)
-# framerate = 30
-resolution = (1024, 768)
-framerate = 60
+resolution = (1296, 972)
+framerate = 30
 
 # number of seconds to film each video
-interval = 5
+interval = 10
 
 
 def generate_filename(videodir, timestamp, counter, filetype):
