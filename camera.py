@@ -20,7 +20,10 @@ filetype = 'h264'
 zfill_decimal = 6 
 
 # (pixel width, height)
-resolution = (1296, 972)
+# resolution = (1296, 972)
+# framerate = 30
+resolution = (1024, 768)
+framerate = 60
 
 # number of seconds to film each video
 interval = 5
@@ -58,6 +61,7 @@ def main():
 
 		# Initialization
 		camera.resolution = resolution
+		camera.framerate = framerate
 		timestamp = str(datetime.now()).replace(' ','-').replace(':','-')
 
 		# start recording, chunking files every <interval> seconds
