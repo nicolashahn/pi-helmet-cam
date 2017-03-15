@@ -37,7 +37,11 @@ def make_room():
 	if sorted_videos:
 		oldest_video = sorted_videos[0]
 		if testing: print 'Removing oldest video: {}'.format(oldest_video)
-		rmtree('{}/{}'.format(videodir, oldest_video)) # may not have permission if running as pi and video was created by root
+		try:
+			rmtree('{}/{}'.format(videodir, oldest_video)) # may not have permission if running as pi and video was created by root
+		except OSError as e:
+			print 'ERROR, must run as root otherwise script cannot clear out old videos'
+			sys.exit(1)
 	else:
 		if testing: print 'No videos in directory {}, cannot make room'.format(videodir)
 
@@ -78,6 +82,9 @@ def continuous_record(camera, videodir, timestamp, filetype, interval):
 		split_filename = generate_filename(videodir, timestamp, counter, filetype)
 		camera.split_recording(split_filename)
 		camera.wait_recording(interval)
+		if counter % 100 == 0:
+			if not enough_disk_space():
+				make_room()
 	camera.stop_recording()
 	if testing: camera.stop_preview()
 	
