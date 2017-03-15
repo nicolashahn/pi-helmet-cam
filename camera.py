@@ -28,16 +28,16 @@ framerate = 30
 interval = 5
 
 # what % of disk space must be free to start a new video
-required_free_space_percent = 10
+required_free_space_percent = 15 # about an hour
 
 
 def make_room():
 	""" clear oldest video """
-	sorted_videos = sorted(listdir(video))
+	sorted_videos = sorted(listdir(videodir))
 	if sorted_videos:
 		oldest_video = sorted_videos[0]
 		if testing: print 'Removing oldest video: {}'.format(oldest_video)
-		shutil.rmtree(oldest_video) # may not have permission if running as pi and video was created by root
+		rmtree('{}/{}'.format(videodir, oldest_video)) # may not have permission if running as pi and video was created by root
 	else:
 		if testing: print 'No videos in directory {}, cannot make room'.format(videodir)
 
@@ -90,8 +90,7 @@ def main():
 		camera.framerate = framerate
 		timestamp = str(datetime.now()).replace(' ','-').replace(':','-')
 		while not enough_disk_space():
-			# make_room()
-			pass
+			make_room()
 
 		# start recording, chunking files every <interval> seconds
 		continuous_record(camera, videodir, timestamp, filetype, interval)
