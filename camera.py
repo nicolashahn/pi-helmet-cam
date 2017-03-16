@@ -38,14 +38,15 @@ required_free_space_percent = 15 # about an hour
 
 
 
-def make_room():
+def make_room(videodir):
 	""" clear oldest video """
 	sorted_videos = sorted(listdir(videodir))
 	if sorted_videos:
 		oldest_video = sorted_videos[0]
 		if debug: print 'Removing oldest video: {}'.format(oldest_video)
-		try:
-			rmtree('{}/{}'.format(videodir, oldest_video)) # may not have permission if running as pi and video was created by root
+		# may not have permission if running as pi and video was created by root
+	try:
+			rmtree('{}/{}'.format(videodir, oldest_video)) 
 		except OSError as e:
 			print 'ERROR, must run as root otherwise script cannot clear out old videos'
 			exit(1)
@@ -53,12 +54,12 @@ def make_room():
 		if debug: print 'No videos in directory {}, cannot make room'.format(videodir)
 
 
-def enough_disk_space():
+def enough_disk_space(required_free_space_percent):
 	""" return true if we have enough space to start a new video """
 	df = Popen(["df", "/"], stdout=PIPE)
 	output = df.communicate()[0]
-	percent_str = output.split("\n")[1].split()[4]
-	percent_used = int(percent_str.replace('%',''))
+	percent_used_str = output.split("\n")[1].split()[4]
+	percent_used = int(percent_used_str.replace('%',''))
 	if debug: print '{}% of disk space used.'.format(percent_used)
 	enough = 100 >= required_free_space_percent + percent_used
 	if debug: print 'Enough space to start new video: {}'.format(enough)
@@ -90,8 +91,8 @@ def continuous_record(camera, videodir, timestamp, filetype, interval):
 		camera.split_recording(split_filename)
 		camera.wait_recording(interval)
 		if counter % space_check_interval == 0:
-			while not enough_disk_space():
-				make_room()
+			while not enough_disk_space(required_free_space_percent):
+				make_room(videodir)
 	camera.stop_recording()
 	if debug: camera.stop_preview()
 	
@@ -103,8 +104,8 @@ def main():
 		camera.resolution = resolution
 		camera.framerate = framerate
 		timestamp = str(datetime.now()).replace(' ','-').replace(':','-')
-		while not enough_disk_space():
-			make_room()
+		while not enough_disk_space(required_free_space_percent):
+			make_room(videodir)
 
 		# start recording, chunking files every <interval> seconds
 		continuous_record(camera, videodir, timestamp, filetype, interval)
