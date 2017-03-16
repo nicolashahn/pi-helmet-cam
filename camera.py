@@ -1,17 +1,20 @@
+# pi-helmet-cam
+# recording script for a Raspberry Pi powered motorcycle helmet camera
+# Nicolas Hahn
+
 from picamera import PiCamera
 from time import sleep
 from datetime import datetime
-from os import mkdir
+from os import mkdir, listdir
 from os.path import isdir
-from os import listdir
 from shutil import rmtree
-import sys
-import subprocess
+from sys import exit, argv
+from subprocess import Popen, PIPE
 
-# Constants
+
 
 # to specify lines not to run during actual use
-testing = False
+debug = False
 
 videodir = 'video'
 filetype = 'h264'
@@ -27,8 +30,12 @@ framerate = 30
 # number of seconds to film each video
 interval = 5
 
+# check for enough disk space every (this many) of above intervals
+space_check_interval = 100
+
 # what % of disk space must be free to start a new video
 required_free_space_percent = 15 # about an hour
+
 
 
 def make_room():
@@ -36,25 +43,25 @@ def make_room():
 	sorted_videos = sorted(listdir(videodir))
 	if sorted_videos:
 		oldest_video = sorted_videos[0]
-		if testing: print 'Removing oldest video: {}'.format(oldest_video)
+		if debug: print 'Removing oldest video: {}'.format(oldest_video)
 		try:
 			rmtree('{}/{}'.format(videodir, oldest_video)) # may not have permission if running as pi and video was created by root
 		except OSError as e:
 			print 'ERROR, must run as root otherwise script cannot clear out old videos'
-			sys.exit(1)
+			exit(1)
 	else:
-		if testing: print 'No videos in directory {}, cannot make room'.format(videodir)
+		if debug: print 'No videos in directory {}, cannot make room'.format(videodir)
 
 
 def enough_disk_space():
 	""" return true if we have enough space to start a new video """
-	df = subprocess.Popen(["df", "/"], stdout=subprocess.PIPE)
+	df = Popen(["df", "/"], stdout=PIPE)
 	output = df.communicate()[0]
 	percent_str = output.split("\n")[1].split()[4]
 	percent_used = int(percent_str.replace('%',''))
-	if testing: print '{}% of disk space used.'.format(percent_used)
+	if debug: print '{}% of disk space used.'.format(percent_used)
 	enough = 100 >= required_free_space_percent + percent_used
-	if testing: print 'Enough space to start new video: {}'.format(enough)
+	if debug: print 'Enough space to start new video: {}'.format(enough)
 	return enough
 
 
@@ -62,18 +69,18 @@ def generate_filename(videodir, timestamp, counter, filetype):
 	""" going to look like: 2017-03-08-09-54-27.334326-000001.h264 """
 	filename_prefix = '{}/{}'.format(videodir, timestamp)
 	if not isdir(filename_prefix):
-		if testing: print 'Creating directory {}'.format(filename_prefix)
+		if debug: print 'Creating directory {}'.format(filename_prefix)
 		mkdir(filename_prefix)
 	zfill_counter = str(counter).zfill(zfill_decimal)
 	filename =  '{}/{}-{}.{}'.format(filename_prefix, timestamp, zfill_counter, filetype)
-	if testing: print 'Recording {}'.format(filename)
+	if debug: print 'Recording {}'.format(filename)
 	return filename
 
 
 def continuous_record(camera, videodir, timestamp, filetype, interval):
 	""" record <interval> second files with prefix """
 	counter = 0
-	if testing: camera.start_preview()
+	if debug: camera.start_preview()
 	initial_filename = generate_filename(videodir, timestamp, counter, filetype)
 	camera.start_recording(initial_filename)
 	camera.wait_recording(interval)
@@ -82,11 +89,11 @@ def continuous_record(camera, videodir, timestamp, filetype, interval):
 		split_filename = generate_filename(videodir, timestamp, counter, filetype)
 		camera.split_recording(split_filename)
 		camera.wait_recording(interval)
-		if counter % 100 == 0:
-			if not enough_disk_space():
+		if counter % space_check_interval == 0:
+			while not enough_disk_space():
 				make_room()
 	camera.stop_recording()
-	if testing: camera.stop_preview()
+	if debug: camera.stop_preview()
 	
 
 def main():
@@ -104,7 +111,7 @@ def main():
 
 
 if __name__ == "__main__":
-	if len(sys.argv) > 1:
-		if sys.argv[1] == '-t' or sys.argv[1] == '--testing':
-			testing = True
+	if len(argv) > 1:
+		if argv[1] == '-d' or argv[1] == '--debug':
+			debug = True
 	main()
