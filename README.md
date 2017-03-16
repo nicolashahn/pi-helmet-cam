@@ -41,8 +41,8 @@ Found in the main Google Doc for this project: https://docs.google.com/document/
 
 #### `camera.py`
 
-- Python script that begins recording video in chunks when started
-- Use `-t` or `--testing` to see video preview and/or debug print statements
+- Python script that begins recording video in chunks when started using picamera Python module
+- Use `-d` or `--debug` to see video preview and debug print statements
 
 #### `boot_script.sh`
 
