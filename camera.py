@@ -20,8 +20,13 @@ filetype = 'h264'
 # will start to screw up when video has passed (interval)*10^(zfill_decimal) seconds in length
 zfill_decimal = 6 
 
+# best settings for 5mp V1 camera
 # (pixel width, height)
-resolution = (1296, 972)
+# resolution = (1296, 972)
+# framerate = 30
+
+# 8mp V2 camera
+resolution = (1640, 1232)
 framerate = 30
 
 # number of seconds to film each video
