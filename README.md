@@ -23,13 +23,9 @@ Software for a Raspberry Pi Zero W motorcycle helmet camera
 
 ## Setup Instructions
 
-// TODO not finished
+#### Set up Raspberry Pi, camera, and mounting
 
-#### Set up your Raspberry Pi and camera
-
-I used a Raspberry Pi Zero Wireless, but any that can interface with a Raspberry Pi camera will work. I'll leave it to other online guides to show you how to get it set up. I'm also going to assume if you're trying this you have a working knowledge of Unix, shell scripting, and Python.
-
-Get your Pi set up with a camera (I used an Arducam 5mp, a $17 knockoff of the 1st gen Raspberry Pi official camera) and Raspbian installed and camera enabled via `raspi-config`, then `git clone` this repository into your `~` directory.
+Found in the main Google Doc for this project: https://docs.google.com/document/d/1HNO4g3zqxcsHzVkxqeB1x39abU7UEovlvAk7Gv2QWl4/edit?usp=sharing
 
 #### cronjob for recording on boot up:
 
@@ -45,8 +41,8 @@ Get your Pi set up with a camera (I used an Arducam 5mp, a $17 knockoff of the 1
 
 #### `camera.py`
 
-- Python script that begins recording video in chunks when started
-- Use `-t` or `--testing` to see video preview
+- Python script that begins recording video in chunks when started using picamera Python module
+- Use `-d` or `--debug` to see video preview and debug print statements
 
 #### `boot_script.sh`
 
@@ -57,6 +53,10 @@ Get your Pi set up with a camera (I used an Arducam 5mp, a $17 knockoff of the 1
 #### `clear_videos.sh`
 
 - helpful script to just clean out old video from the `video` directory
+
+#### `kill_process.sh`
+
+- kill all running python processes, quick way to stop the script if running in background
 
 #### `video/`
 - the Python script will create a `video` directory to store videos in
