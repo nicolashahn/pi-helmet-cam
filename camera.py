@@ -39,7 +39,7 @@ interval = 5
 space_check_interval = 100
 
 # what % of disk space must be free to start a new video
-required_free_space_percent = 15 # about an hour
+required_free_space_percent = 15 # about an hour with 64gb card
 
 
 
@@ -50,7 +50,7 @@ def make_room(videodir):
 		oldest_video = sorted_videos[0]
 		if debug: print 'Removing oldest video: {}'.format(oldest_video)
 		# may not have permission if running as pi and video was created by root
-	try:
+		try:
 			rmtree('{}/{}'.format(videodir, oldest_video)) 
 		except OSError as e:
 			print 'ERROR, must run as root otherwise script cannot clear out old videos'
@@ -88,8 +88,7 @@ def continuous_record(camera, videodir, timestamp, filetype, interval):
 	counter = 0
 	if debug: camera.start_preview()
 	initial_filename = generate_filename(videodir, timestamp, counter, filetype)
-	camera.start_recording(initial_filename)
-	camera.wait_recording(interval)
+	camera.start_recording(initial_filename, intra_period=interval*framerate)
 	while(True):
 		counter += 1
 		split_filename = generate_filename(videodir, timestamp, counter, filetype)
