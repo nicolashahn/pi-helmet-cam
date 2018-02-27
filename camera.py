@@ -2,10 +2,9 @@
 # recording script for a Raspberry Pi powered motorcycle helmet camera
 # Nicolas Hahn
 
+import os
 from time import sleep
 from datetime import datetime
-from os import mkdir, listdir
-from os.path import isdir
 from shutil import rmtree
 from sys import exit, argv
 from subprocess import Popen, PIPE
@@ -34,9 +33,37 @@ space_check_interval = 100
 # what % of disk space must be free to start a new video
 required_free_space_percent = 15 # about an hour with 64gb card
 
+# start a new video after current reaches this size
+max_video_size = 5000 * (10 ** 6)  # ~45 minutes
+
+class OutputShard(object):
+    def __init__(self, filename):
+        self.filename = filename
+        self.is_new = self.size == 0
+        self.stream = open(filename, 'ab')
+
+    def __repr__(self):
+        return '<OutputShard:%s>' % self.filename
+
+    def write(self, buf):
+        self.stream.write(buf)
+
+    def close(self):
+        self.stream.close()
+
+    def remove(self):
+        os.remove(self.filename)
+
+    @property
+    def size(self):
+        try:
+            return os.stat(self.filename).st_size
+        except OSError:
+            return 0
+
 def make_room(videodir):
     """ clear oldest video """
-    sorted_videos = sorted(listdir(videodir))
+    sorted_videos = sorted(os.listdir(videodir))
     if sorted_videos:
         oldest_video = sorted_videos[0]
         if debug: print 'Removing oldest video: {}'.format(oldest_video)
@@ -60,32 +87,35 @@ def enough_disk_space(required_free_space_percent):
     if debug: print 'Enough space to start new video: {}'.format(enough)
     return enough
 
-def generate_filename(videodir, timestamp, counter, filetype):
+def generate_filename(videodir, timestamp, counter):
     """ going to look like: 2017-03-08-09-54-27.334326-000001.h264 """
     filename_prefix = '{}/{}'.format(videodir, timestamp)
-    if not isdir(filename_prefix):
+    if not os.path.isdir(filename_prefix):
         if debug: print 'Creating directory {}'.format(filename_prefix)
-        mkdir(filename_prefix)
+        os.mkdir(filename_prefix)
     zfill_counter = str(counter).zfill(zfill_decimal)
     filename =  '{}/{}-{}.{}'.format(filename_prefix, timestamp, zfill_counter, filetype)
     if debug: print 'Recording {}'.format(filename)
     return filename
 
-def continuous_record(camera, videodir, filetype, interval):
+def continuous_record(camera, videodir, interval):
     """ record <interval> second files with prefix """
     timestamp = str(datetime.now()).replace(' ','-').replace(':','-')
     if debug: camera.start_preview()
-    counter = 0
-    initial_filename = generate_filename(videodir, timestamp, counter, filetype)
-    camera.start_recording(initial_filename, intra_period=interval*framerate)
+    counter = 0 # number of video files created
+    intervals_recorded = 0 # number of time intervals recorded
+    shard = OutputShard(generate_filename(videodir, timestamp, counter))
+    camera.start_recording(shard, format=filetype, intra_period=interval*framerate)
     while(True):
-        counter += 1
-        split_filename = generate_filename(videodir, timestamp, counter, filetype)
-        camera.split_recording(split_filename)
+        intervals_recorded += 1
+        camera.split_recording(shard)
         camera.wait_recording(interval)
+        if shard.size > max_video_size:
+            counter += 1
         if counter % space_check_interval == 0:
             while not enough_disk_space(required_free_space_percent):
                 make_room(videodir)
+        shard = OutputShard(generate_filename(videodir, timestamp, counter))
     camera.stop_recording()
     if debug: camera.stop_preview()
 
@@ -97,7 +127,7 @@ def main():
         while not enough_disk_space(required_free_space_percent):
             make_room(videodir)
         # start recording, chunking files every <interval> seconds
-        continuous_record(camera, videodir, filetype, interval)
+        continuous_record(camera, videodir, interval)
 
 if __name__ == "__main__":
     if len(argv) > 1:
