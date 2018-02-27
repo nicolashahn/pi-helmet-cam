@@ -17,14 +17,13 @@ videodir = 'video'
 filetype = 'h264'
 
 # how many 0s to put in front of counter number
-# will start to screw up when video has passed (interval)*10^(zfill_decimal) seconds in length
-zfill_decimal = 6 
+zfill_decimal = 3 
 
 # 8mp V2 camera
 resolution = (1640, 1232)
 framerate = 30
 
-# number of seconds to film each video
+# number of seconds to film per shard
 interval = 5
 
 # check for enough disk space every (this many) of above intervals
@@ -88,13 +87,13 @@ def enough_disk_space(required_free_space_percent):
     return enough
 
 def generate_filename(videodir, timestamp, counter):
-    """ going to look like: 2017-03-08-09-54-27.334326-000001.h264 """
+    """ going to look like: 2017-03-08-09-54-27.334326/000.h264 """
     filename_prefix = '{}/{}'.format(videodir, timestamp)
     if not os.path.isdir(filename_prefix):
         if debug: print 'Creating directory {}'.format(filename_prefix)
         os.mkdir(filename_prefix)
     zfill_counter = str(counter).zfill(zfill_decimal)
-    filename =  '{}/{}-{}.{}'.format(filename_prefix, timestamp, zfill_counter, filetype)
+    filename =  '{}/{}.{}'.format(filename_prefix, zfill_counter, filetype)
     if debug: print 'Recording {}'.format(filename)
     return filename
 
