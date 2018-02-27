@@ -75,9 +75,9 @@ def continuous_record(camera, videodir, filetype, interval):
     """ record <interval> second files with prefix """
     timestamp = str(datetime.now()).replace(' ','-').replace(':','-')
     if debug: camera.start_preview()
+    counter = 0
     initial_filename = generate_filename(videodir, timestamp, counter, filetype)
     camera.start_recording(initial_filename, intra_period=interval*framerate)
-    counter = 0
     while(True):
         counter += 1
         split_filename = generate_filename(videodir, timestamp, counter, filetype)
