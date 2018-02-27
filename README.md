@@ -44,6 +44,13 @@ Found in the main Google Doc for this project: https://docs.google.com/document/
 - Python script that begins recording video in chunks when started using picamera Python module
 - Use `-d` or `--debug` to see video preview and debug print statements
 
+#### `video/`
+- the Python script will create a `video` directory to store videos in
+- each video will have its own directory, the name being a current timestamp
+- inside this, there will be (up to) ~45 min videos with the form `001.h264`
+  - after the video gets large enough, a new one will be created in the same directory with an incremented filename
+  - the video should write to disk every 5 seconds, so in case of power loss, at most that much of the video will be lost
+
 #### `boot_script.sh`
 
 - clears out old videos if we need the space
@@ -57,13 +64,6 @@ Found in the main Google Doc for this project: https://docs.google.com/document/
 #### `kill_process.sh`
 
 - kill all running python processes, quick way to stop the script if running in background
-
-#### `video/`
-- the Python script will create a `video` directory to store videos in
-- each video will have its own directory, the name being a current timestamp
-- inside this, there will be 5 second clips with the form `<timestamp>-000001.h264`
-- protip: when you move this directory to your laptop/desktop, you can select all files and open them with VLC or similar and they'll play in order
-- TODO: have script automatically merge the files after recording
 
 #### `cronlog`
 - where logs from starting the script on boot with `cronjob` will go
